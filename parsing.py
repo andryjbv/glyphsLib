@@ -26,6 +26,7 @@ import sys
 from enum import Enum
 from pathlib import Path
 from typing import List
+import re
 
 
 class TestStatus(Enum):
@@ -64,7 +65,25 @@ def parse_test_output(stdout_content: str, stderr_content: str) -> List[TestResu
         - Use regular expressions or string parsing to extract test results
         - Create TestResult objects for each test found
     """
-    raise NotImplementedError('Implement the test output parsing logic')
+    results: List[TestResult] = []
+
+    pattern = re.compile(r"^(?P<name>[^ ]+) +(?P<status>PASSED|FAILED|SKIPPED|ERROR)")
+
+    for line in stdout_content.splitlines():
+        match = pattern.search(line.strip())
+        if match:
+            results.append(
+                TestResult(name=match.group('name'), status=TestStatus[match.group('status')])
+            )
+
+    for line in stderr_content.splitlines():
+        match = pattern.search(line.strip())
+        if match:
+            results.append(
+                TestResult(name=match.group('name'), status=TestStatus[match.group('status')])
+            )
+
+    return results
 
 
 ### Implement the parsing logic above ###
